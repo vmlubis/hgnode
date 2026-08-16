@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HGNODE — The Infrastructure Behind Performance</title>
+  <meta name="description" content="HGNODE builds and manages performance-focused hosting nodes and network systems for Southeast Asia." />
+  <meta name="theme-color" content="#0e1522" />
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="https://hgnode.com/assets/img/favicons.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- OG/Twitter -->
+  <meta property="og:title" content="HGNODE — The Infrastructure Behind Performance" />
+  <meta property="og:description" content="Engineered hosting, optimized routing, and real uptime across Southeast Asia." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://hgnode.com/" />
+  <meta property="og:image" content="https://hgnode.com/assets/img/favicons.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="HGNODE — The Infrastructure Behind Performance" />
+  <meta name="twitter:description" content="Engineered hosting, optimized routing, and real uptime across Southeast Asia." />
+  <meta name="twitter:image" content="https://hgnode.com/assets/img/favicons.png" />
+
+  <style>
+    :root{
+      --bg:#0e1522;
+      --fg:#e8f0ff;
+      --accent:#1e90ff;
+      --muted:#a0b3d0;
+      --panel:rgba(255,255,255,.03);
+      --ring:rgba(30,144,255,.6);
+      --shadow:0 10px 25px rgba(0,0,0,.35);
+      --ok:#21d07a; --warn:#ffc857; --soon:#89a3ff;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);color:var(--fg);
+      overflow-x:hidden;scroll-behavior:smooth;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Base sections */
+    section{
+      position:relative;min-height:100svh;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      text-align:center;padding:8vh 6vw;
+      opacity:0;transform:translateY(40px);
+      transition:opacity .8s ease-out, transform .8s ease-out;
+    }
+    section.visible{opacity:1;transform:translateY(0)}
+    .content{z-index:1;position:relative;max-width:1100px;margin-inline:auto}
+
+    h1{font-size:clamp(2.4rem,6vw,5rem);font-weight:800;letter-spacing:.4px;color:var(--accent);text-shadow:0 0 22px rgba(30,144,255,.35)}
+    p{max-width:900px;margin:1.25rem auto 0;color:var(--muted);font-size:clamp(1rem,1.4vw,1.15rem);line-height:1.75}
+
+    .actions{margin-top:1.75rem;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+    a.btn{
+      display:inline-block;padding:.95rem 1.4rem;border:1px solid rgba(30,144,255,.55);
+      border-radius:12px;color:var(--fg);font-weight:600;text-decoration:none;
+      backdrop-filter:saturate(120%) blur(1px);
+      background:linear-gradient(180deg,rgba(30,144,255,.18),rgba(30,144,255,.1));
+      box-shadow:0 0 15px rgba(30,144,255,.18);
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    a.btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(30,144,255,.35)}
+    a.btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+
+    .panel{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2rem 1.5rem;box-shadow:var(--shadow)}
+
+    /* HERO net */
+    canvas#net{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.32;pointer-events:none}
+
+    /* ABOUT cosmetics (existing upgraded) */
+    .about-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+    .orb{position:absolute;filter:blur(40px);opacity:.28;mix-blend:screen;width:38vmax;height:38vmax;border-radius:50%;
+      background:radial-gradient(35% 35% at 50% 50%, rgba(30,144,255,.9), rgba(30,144,255,.05) 70%);animation:floatOrb 16s ease-in-out infinite alternate}
+    .orb-1{left:-12vmax;top:55%}
+    .orb-2{width:32vmax;height:32vmax;right:-10vmax;top:12%;background:radial-gradient(35% 35% at 50% 50%, rgba(0,214,255,.9), rgba(0,214,255,.05) 70%);animation-duration:18s;animation-delay:-3s}
+    @keyframes floatOrb{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(6vmax,-4vmax,0) scale(1.06)}}
+    .grid-mask{position:absolute;inset:-20%;opacity:.18;background:
+      repeating-linear-gradient(0deg, rgba(168,195,255,.05) 0 1px, transparent 1px 30px),
+      repeating-linear-gradient(90deg, rgba(168,195,255,.05) 0 1px, transparent 1px 30px);
+      animation:drift 40s linear infinite;mask-image:radial-gradient(60% 60% at 50% 50%, #000 60%, transparent 100%)}
+    @keyframes drift{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(60px,40px,0)}}
+
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:22px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.4rem;text-align:left;transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;will-change:transform}
+    .card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(0,0,0,.35);border-color:rgba(30,144,255,.45)}
+    .card h3{font-size:1.05rem;color:#bcd2ff;margin-bottom:.45rem}
+    .card p{margin:0;color:var(--muted);font-size:.98rem}
+
+    .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
+    .kpi{padding:1rem 1.2rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .kpi .num{font-size:1.65rem;font-weight:800;color:#cfe0ff}
+    .kpi .label{font-size:.9rem;color:var(--muted)}
+
+    /* ===== NODES (Section 3) ===== */
+    .nodes-wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch}
+    @media (max-width: 980px){.nodes-wrap{grid-template-columns:1fr}}
+    #routes{position:relative;min-height:400px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01))}
+    canvas#routes-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+    .node-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    @media (max-width: 680px){.node-cards{grid-template-columns:1fr}}
+    .ncard{position:relative;padding:1.1rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);text-align:left;overflow:hidden}
+    .ncard h3{font-size:1.02rem;color:#cfe0ff;margin-bottom:.25rem}
+    .ncard p{margin:.25rem 0 .2rem;font-size:.95rem}
+    .badge{display:inline-block;padding:.25rem .55rem;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.2px}
+    .ok{background:rgba(33,208,122,.15);border:1px solid rgba(33,208,122,.45);color:#b9ffd9}
+    .warn{background:rgba(255,200,87,.15);border:1px solid rgba(255,200,87,.45);color:#ffe8ad}
+    .soon{background:rgba(137,163,255,.15);border:1px solid rgba(137,163,255,.45);color:#dbe1ff}
+    .ping{position:absolute;right:10px;top:12px;width:8px;height:8px;border-radius:50%;background:#1e90ff}
+    .ping::after{content:"";position:absolute;inset:-6px;border-radius:inherit;border:2px solid #1e90ff;opacity:.6;animation:pulse 1.6s ease-out infinite}
+    @keyframes pulse{0%{transform:scale(.6);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+
+    .toggle{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin:.6rem 0 0}
+    .toggle input{appearance:none;width:44px;height:24px;border-radius:999px;background:rgba(255,255,255,.08);position:relative;outline:none;border:1px solid rgba(255,255,255,.1);cursor:pointer}
+    .toggle input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#cfe0ff;transition:left .18s}
+    .toggle input:checked{background:rgba(30,144,255,.35);border-color:rgba(30,144,255,.6)}
+    .toggle input:checked::after{left:24px}
+
+    /* ===== ROADMAP (Section 4) ===== */
+    .timeline{display:grid;gap:14px;margin-top:16px}
+    .step{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start;text-align:left;padding:1rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .step .title{font-weight:800;color:#cfe0ff}
+    .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:.5rem}
+    .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,#1e90ff,#00e1ff);box-shadow:0 0 16px rgba(30,144,255,.35) inset;border-radius:inherit;transition:width 1.2s ease}
+    .status{margin-left:auto}
+    .s-note{font-size:.9rem;color:var(--muted)}
+
+    /* ===== VISION (Section 5) ===== */
+    .marquee{--spd:40s;display:flex;gap:24px;overflow:hidden;mask-image:linear-gradient(to right,transparent, #000 10%, #000 90%, transparent)}
+    .marquee .row{display:flex;gap:24px;min-width:100%;animation:scroll var(--spd) linear infinite}
+    .chip{padding:.6rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);font-weight:600;color:#cfe0ff;white-space:nowrap}
+    @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+
+    .quote{position:relative;margin-top:22px;padding:1.2rem 1.4rem;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08)}
+    .quote::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.16) 15%,transparent 30%);transform:translateX(-120%);animation:shine 6s ease-in-out infinite}
+    @keyframes shine{0%{transform:translateX(-120%)}60%{transform:translateX(120%)}100%{transform:translateX(120%)}}
+
+    /* Dark only (ignore system light) */
+    @media (prefers-color-scheme:light){
+      :root{ --bg:#0e1522; --fg:#e8f0ff; --accent:#1e90ff; --muted:#a0b3d0; }
+      section{ background:none !important; }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .cards{grid-template-columns:1fr}
+      .kpis{grid-template-columns:1fr 1fr}
+      .step{grid-template-columns:1fr}
+    }
+    @media (max-width: 520px){ .kpis{grid-template-columns:1fr} }
+    /* ==== SAFE PATCH: hanya untuk akhir halaman ==== */
+
+/* Beri napas di akhir halaman (Vision) */
+#vision {
+  padding-bottom: calc(max(18vh, 140px) + env(safe-area-inset-bottom));
+}
+
+/* Konten Vision aman overflow-nya */
+#vision p { word-break: break-word; }
+
+/* Marquee di Vision: animasi & masking DI-SCOPE */
+#vision .marquee {
+  --spd: 40s;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+#vision .marquee .row {
+  display: flex; gap: 24px; min-width: 100%;
+  animation: scroll var(--spd) linear infinite;
+}
+#vision .chip {
+  padding: .6rem .9rem; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03);
+  font-weight: 600; color: #cfe0ff; white-space: nowrap;
+}
+
+/* Mobile kecil: hentikan animasi & wrap agar tidak terpotong */
+@media (max-width: 480px) {
+  #vision .marquee { mask-image: none; }
+  #vision .marquee .row {
+    animation: none !important;
+    flex-wrap: wrap; gap: 10px; row-gap: 10px;
+  }
+  #vision .chip { padding: .5rem .7rem; font-size: .92rem; }
+}
+
+/* Shine di quote tidak bocor */
+#vision .quote { overflow: hidden; position: relative; }
+@media (max-width: 480px) {
+  #vision .quote::after { animation: none; }
+}
+
+/* Footer: jarak aman + full width saja (tanpa ubah section lain) */
+footer {
+  padding-bottom: calc(36px + env(safe-area-inset-bottom));
+  width: 100%;
+  box-sizing: border-box;
+}
+/* ==== Footer: full-bleed bg + inner width selaras .content ==== */
+footer{
+  padding: 24px 0;                 /* hilangkan padding samping di outer */
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.02));
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* wadah dalam footer, samain dengan .content (max 1100px + 6vw) */
+footer .footer-inner{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 6vw;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+/* beri napas di akhir halaman supaya tidak terasa “nempel” */
+#vision{
+  padding-bottom: clamp(96px, 14vh, 160px);
+}
+
+/* pastikan konten vision tidak memotong elemen di bawahnya */
+#vision .content{ overflow: visible; }
+/* === Vision end & footer fit === */
+
+/* ruang napas aman di akhir halaman */
+#vision { padding-bottom: clamp(96px, 14vh, 160px); }
+
+/* marquee & chip tetap scoped ke vision */
+#vision .marquee{
+  --spd: 40s;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
+}
+#vision .marquee .row{
+  min-width: 100%;
+  display: flex; gap: 24px;
+  animation: scroll var(--spd) linear infinite;
+}
+@media (max-width: 480px){
+  #vision .marquee{ mask-image:none; }
+  #vision .marquee .row{ animation:none !important; flex-wrap:wrap; gap:10px; row-gap:10px; }
+  #vision .chip{ padding:.5rem .7rem; font-size:.92rem; }
+}
+
+/* quote: cegah shine bocor */
+#vision .quote{ overflow:hidden; position:relative; }
+@media (max-width:480px){ #vision .quote::after{ animation:none; } }
+
+/* Footer full-bleed tapi teks align ke content */
+footer{
+  padding:24px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.02));
+  width:100%; box-sizing:border-box;
+}
+footer .footer-inner{
+  max-width:1100px; margin:0 auto; padding:0 6vw;
+  color:var(--muted); font-size:.95rem;
+}
+/* FINAL, aman di semua breakpoint */
+#vision .content{
+  width: min(100%, 1100px);   /* penuh di mobile, capped di desktop */
+  margin-inline: auto;
+  overflow: initial !important; /* reset: jangan pakai visible/hidden di container */
+}
+
+#vision{
+  padding-bottom: clamp(96px, 14vh, 160px); /* napas sebelum footer */
+}
+/* === Footer clean & centered === */
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 40px 0;
+  width: 100%;
+  background: none;             /* hilangkan gradient / warna tambahan */
+  border: none !important;      /* buang garis pembatas */
+
+  text-align: center;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+footer .footer-inner {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
+  </style>
+</head>
+<body>
+  <!-- HERO -->
+  <section id="hero" aria-label="Hero">
+    <canvas id="net" aria-hidden="true"></canvas>
+    <div class="content">
+      <h1>HGNODE.</h1>
+      <p>The infrastructure behind performance — engineered hosting, optimized routing, and real uptime. We connect Southeast Asia with efficient, scalable, and transparent network nodes.</p>
+      <div class="actions">
+        <a href="#about" class="btn">Explore More</a>
+        <a href="#nodes" class="btn" aria-label="Jump to nodes">Our Nodes</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT (upgraded) -->
+  <section id="about" aria-label="About HGNODE">
+    <div class="about-bg" aria-hidden="true">
+      <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="grid-mask"></div>
+    </div>
+    <div class="content">
+      <div class="panel" style="backdrop-filter:saturate(120%) blur(3px)">
+        <h1>About</h1>
+        <p>At HGNODE, we don’t rent servers — we design environments. From shared to dedicated nodes, our stack is built for reliability, predictable latency, and transparent engineering.</p>
+        <div class="cards" id="feature-cards">
+          <div class="card"><h3>Engineered Environments</h3><p>Tuned kernels, sane defaults, and consistent observability — so workloads behave predictably at scale.</p></div>
+          <div class="card"><h3>Predictable Latency</h3><p>Optimized routing paths into SEA exchanges with measurable gains over generic transit.</p></div>
+          <div class="card"><h3>Transparent Ops</h3><p>No gimmicks, no oversell. Capacity, status, and methods are documented and reviewable.</p></div>
+        </div>
+        <div class="kpis" id="kpis">
+          <div class="kpi"><div class="num" data-target="18" data-suffix=" ms">0</div><div class="label">Median intra-SEA latency</div></div>
+          <div class="kpi"><div class="num" data-target="99.98" data-suffix="%">0</div><div class="label">Observed uptime (rolling)</div></div>
+          <div class="kpi"><div class="num" data-target="3" data-suffix="+">0</div><div class="label">Regions live</div></div>
+        </div>
+        <div class="actions"><a href="#nodes" class="btn">View Our Nodes</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NODES (upgraded) -->
+  <section id="nodes" aria-label="Network Nodes">
+    <div class="content">
+      <h1>Our Nodes</h1>
+      <p>Live regions and their roles. Toggle route overlay to visualize inter-node links.</p>
+
+      <div class="nodes-wrap">
+        <div id="routes" class="panel" aria-hidden="true">
+          <canvas id="routes-canvas"></canvas>
+          <div class="toggle"><label for="routeToggle">Show Routes</label><input id="routeToggle" type="checkbox" checked></div>
+        </div>
+
+        <div class="node-cards">
+          <div class="ncard" data-node="chi">
+            <span class="ping"></span>
+            <h3>🇺🇸 DataWagon — Chicago</h3>
+            <p>Main compute, peering, anycast ingress.</p>
+            <span class="badge ok">Live</span>
+          </div>
+          <div class="ncard" data-node="buf">
+            <span class="ping"></span>
+            <h3>🇺🇸 DataWagon — Buffalo</h3>
+            <p>Edge cache & failover zone.</p>
+            <span class="badge ok">Live</span>
+          </div>
+          <div class="ncard" data-node="nl">
+            <span class="ping"></span>
+            <h3>🇳🇱 Worldstream — Netherlands</h3>
+            <p>Backup / mirror node for EU.</p>
+            <span class="badge ok">Live</span>
+          </div>
+          <div class="ncard" data-node="kc">
+            <span class="ping"></span>
+            <h3>🇺🇸 NOCIX — Kansas City</h3>
+            <p>Optimized route node for Indonesia.</p>
+            <span class="badge ok">Live</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions"><a href="#roadmap" class="btn">View Expansion</a></div>
+    </div>
+  </section>
+
+  <!-- ROADMAP (upgraded) -->
+  <section id="roadmap" aria-label="Expansion Roadmap">
+    <div class="content panel">
+      <h1>Expansion</h1>
+      <p>Short, deliberate steps — each with a measurable outcome.</p>
+
+      <div class="timeline" id="timeline">
+        <div class="step">
+          <div class="title">🇮🇩 DCIX Jakarta</div>
+          <div>
+            <div class="s-note">Cross-connect & route policy</div>
+            <div class="bar"><span data-progress="72"></span></div>
+          </div>
+          <div class="status"><span class="badge warn">In deployment</span></div>
+        </div>
+
+        <div class="step">
+          <div class="title">🇻🇳 Regional Node (VN)</div>
+          <div>
+            <div class="s-note">Facility selection & latency study</div>
+            <div class="bar"><span data-progress="40"></span></div>
+          </div>
+          <div class="status"><span class="badge soon">Planned</span></div>
+        </div>
+
+        <div class="step">
+          <div class="title">🇸🇬 Gateway (SG)</div>
+          <div>
+            <div class="s-note">Transit blend & cost modeling</div>
+            <div class="bar"><span data-progress="55"></span></div>
+          </div>
+          <div class="status"><span class="badge soon">Under review</span></div>
+        </div>
+      </div>
+
+      <div class="actions"><a href="#vision" class="btn">Our Vision</a></div>
+    </div>
+  </section>
+
+  <!-- VISION (upgraded) -->
+  <section id="vision" aria-label="Vision">
+    <div class="content">
+      <h1>Built with Intent</h1>
+      <p>Every node, every route, and every configuration is engineered intentionally — no gimmicks, no overselling. We build quietly, so your systems can perform loudly.</p>
+
+      <div class="marquee" aria-hidden="true">
+        <div class="row">
+          <span class="chip">No oversell</span>
+          <span class="chip">Deterministic performance</span>
+          <span class="chip">Documented methods</span>
+          <span class="chip">Predictable latency</span>
+          <span class="chip">Transparent ops</span>
+          <span class="chip">Sane defaults</span>
+          <span class="chip">Right-sized capacity</span>
+        </div>
+      </div>
+
+      <div class="quote panel">
+        <p style="max-width:760px;margin:0 auto;color:#cfe0ff">
+          “Performance has a backbone — we build it.”
+        </p>
+      </div>
+
+      <div class="actions"><a href="#hero" class="btn">Back to Top</a></div>
+    </div>
+  </section>
+
+<footer>
+  <div class="footer-inner">
+    © <span id="year"></span> HGNODE — Infrastructure Division of AngkorByte Network
+  </div>
+</footer>
+
+
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"HGNODE","url":"https://hgnode.com/","logo":"https://hgnode.com/assets/img/favicons.png"}
+  </script>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Intersection fade-in
+    const sections = document.querySelectorAll('section');
+    const io = new IntersectionObserver((entries)=>{ for (const e of entries) if (e.isIntersecting) e.target.classList.add('visible'); }, {threshold:.28});
+    sections.forEach(s=>io.observe(s));
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ABOUT tilt
+    if(!reduceMotion){
+      document.querySelectorAll('#feature-cards .card').forEach(card=>{
+        const k=10;
+        card.addEventListener('pointermove',e=>{
+          const r=card.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
+          card.style.transform=`rotateX(${-py*k}deg) rotateY(${px*k}deg) translateY(-4px)`;
+        });
+        card.addEventListener('pointerleave',()=>card.style.transform='translateY(-4px)');
+      });
+    }
+
+    // KPI count-up
+    const kpiNums=document.querySelectorAll('.kpi .num');
+    const kpiObs=new IntersectionObserver((es)=>{es.forEach(e=>{
+      if(e.isIntersecting){
+        const el=e.target,t=parseFloat(el.dataset.target),suf=el.dataset.suffix||'',int=Number.isInteger(t);
+        let cur=0,step=t/60; const tick=()=>{cur+=step;if(cur>=t)cur=t;el.textContent=(int?Math.round(cur):cur.toFixed(2))+' '+suf;if(cur<t)requestAnimationFrame(tick)};
+        requestAnimationFrame(tick);kpiObs.unobserve(el);
+      }})},{threshold:.6});
+    kpiNums.forEach(n=>kpiObs.observe(n));
+
+    // HERO background net
+    (function(){
+      const c=document.getElementById('net');const ctx=c.getContext('2d');
+      let W=0,H=0,nodes=[];let rafId=null,running=false,scrollY=0;const DPR=Math.min(window.devicePixelRatio||1,2);
+      const reduce=reduceMotion;
+      function rand(min,max){return Math.random()*(max-min)+min}
+      function ideal(){const area=(W*H)/(DPR*DPR);return area<400000?40:(area<800000?60:80)}
+      function resize(){const r=c.getBoundingClientRect();W=Math.floor(r.width*DPR);H=Math.floor(r.height*DPR);c.width=W;c.height=H;c.style.width=r.width+'px';c.style.height=r.height+'px';
+        nodes=Array.from({length:ideal()},()=>({x:rand(0,W),y:rand(0,H),vx:rand(-.25,.25),vy:rand(-.25,.25)}));}
+      function draw(){ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(0,scrollY*.05*DPR);const maxD=140*DPR;
+        for(let i=0;i<nodes.length;i++){const a=nodes[i];a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>W)a.vx*=-1;if(a.y<0||a.y>H)a.vy*=-1;
+          for(let j=i+1;j<nodes.length;j++){const b=nodes[j];const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);if(d<maxD){ctx.strokeStyle=`rgba(30,144,255,${(1-d/maxD)*.22})`;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+          ctx.fillStyle='rgba(30,144,255,.85)';ctx.beginPath();ctx.arc(a.x,a.y,1.4*DPR,0,Math.PI*2);ctx.fill();}
+        ctx.restore();}
+      function loop(){if(!running)return;draw();rafId=requestAnimationFrame(loop)}
+      function start(){if(reduce)return;if(!running){running=true;loop()}} function stop(){running=false;if(rafId)cancelAnimationFrame(rafId)}
+      resize();start();window.addEventListener('resize',resize);window.addEventListener('scroll',()=>{scrollY=window.scrollY},{passive:true});
+      document.addEventListener('visibilitychange',()=>{document.hidden?stop():start()});window.addEventListener('pagehide',stop);window.addEventListener('pageshow',start);
+    })();
+
+    // ===== NODES: routes canvas + hover highlights =====
+    (function(){
+      const wrap=document.getElementById('routes'); const canvas=document.getElementById('routes-canvas'); const ctx=canvas.getContext('2d');
+      const toggle=document.getElementById('routeToggle'); const DPR=Math.min(window.devicePixelRatio||1,2);
+      const reduce=reduceMotion;
+      let W=0,H=0,raf=null,showRoutes=true,mouse=null;
+
+      // Simple pseudo map positions (relative)
+      const nodes={
+        chi:{x:.32,y:.38,color:'#58a6ff',label:'Chicago'},
+        buf:{x:.40,y:.35,color:'#58a6ff',label:'Buffalo'},
+        nl :{x:.78,y:.30,color:'#8bd3ff',label:'Netherlands'},
+        kc :{x:.33,y:.45,color:'#58a6ff',label:'Kansas City'}
+      };
+      const links=[['chi','buf'],['chi','nl'],['kc','chi'],['kc','buf']];
+
+      function resize(){
+        const r=wrap.getBoundingClientRect();
+        W=Math.floor(r.width*DPR); H=Math.floor(Math.max(380,r.height)*DPR);
+        canvas.width=W; canvas.height=H; canvas.style.width=r.width+'px'; canvas.style.height=(H/DPR)+'px';
+      }
+
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+
+        // subtle gradient bg
+        const g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'rgba(30,144,255,.05)'); g.addColorStop(1,'rgba(0,225,255,.04)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+        // glow routes
+        if(showRoutes && !reduce){
+          ctx.lineWidth=1.2*DPR;
+          links.forEach(([a,b],i)=>{
+            const A=nodes[a],B=nodes[b];
+            const ax=A.x*W, ay=A.y*H, bx=B.x*W, by=B.y*H;
+            const midx=(ax+bx)/2, midy=(ay+by)/2 - 40*DPR;
+            // curve
+            ctx.strokeStyle='rgba(30,144,255,.25)';
+            ctx.beginPath(); ctx.moveTo(ax,ay); ctx.quadraticCurveTo(midx,midy,bx,by); ctx.stroke();
+
+            // traveling dot
+            const t=(performance.now()/1200 + i*.2)%1;
+            const qx=(1-t)*(1-t)*ax + 2*(1-t)*t*midx + t*t*bx;
+            const qy=(1-t)*(1-t)*ay + 2*(1-t)*t*midy + t*t*by;
+            ctx.fillStyle='rgba(30,144,255,.75)'; ctx.beginPath(); ctx.arc(qx,qy,2.2*DPR,0,Math.PI*2); ctx.fill();
+          });
+        }
+
+        // nodes
+        Object.keys(nodes).forEach(k=>{
+          const n=nodes[k], x=n.x*W, y=n.y*H;
+          const r=4*DPR;
+          ctx.fillStyle='rgba(24,140,255,.85)';
+          ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+
+          // label if near mouse
+          if(mouse){
+            const d=Math.hypot(mouse.x-x,mouse.y-y);
+            if(d<60*DPR){
+              ctx.fillStyle='rgba(0,0,0,.45)';
+              const w=ctx.measureText(n.label).width + 16;
+              ctx.fillRect(x+8,y-16, w, 18);
+              ctx.fillStyle='#cfe0ff'; ctx.font = `${12*DPR}px Inter`;
+              ctx.fillText(n.label, x+12, y-3);
+            }
+          }
+        });
+
+        raf=requestAnimationFrame(draw);
+      }
+
+      function start(){ if(reduce) return; if(!raf) draw(); }
+      function stop(){ if(raf) cancelAnimationFrame(raf); raf=null; }
+
+      resize(); start();
+      window.addEventListener('resize',()=>{resize()});
+      toggle.addEventListener('change',()=>{showRoutes=toggle.checked});
+      canvas.addEventListener('pointermove',e=>{
+        const r=canvas.getBoundingClientRect(); mouse={x:(e.clientX-r.left)*DPR,y:(e.clientY-r.top)*DPR};
+      });
+      canvas.addEventListener('pointerleave',()=>{mouse=null});
+      document.addEventListener('visibilitychange',()=>{document.hidden?stop():start()});
+    })();
+
+    // ===== ROADMAP: animate progress when visible =====
+    const bars=document.querySelectorAll('.bar > span');
+    const bObs=new IntersectionObserver((es)=>{es.forEach(e=>{ if(e.isIntersecting){ const el=e.target; el.style.width=el.dataset.progress+'%'; bObs.unobserve(el); }})},{threshold:.5});
+    bars.forEach(b=>bObs.observe(b));
+
+    // ===== VISION: reduce marquee if prefers-reduced-motion =====
+    if(reduceMotion){
+      document.querySelectorAll('.marquee .row').forEach(r=>r.style.animation='none');
+      document.querySelector('.quote::after')?.style?.setProperty('animation','none');
+    }
+    
+  </script>
+<script>
+(function(){
+  const rows = document.querySelectorAll('#vision .marquee .row');
+  rows.forEach(row => {
+    // jika row tidak lebih lebar dari container, matikan animasi
+    if (row.scrollWidth <= row.clientWidth) {
+      row.style.animation = 'none';
+    }
+  });
+})();
+</script>
+
+  <noscript><style>section{opacity:1!important;transform:none!important}</style></noscript>
+</body>
+</html>
